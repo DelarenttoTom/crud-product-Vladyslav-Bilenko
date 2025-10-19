@@ -23,7 +23,7 @@ IntelliJ: Run ▶ CrudproductApplication
 
 Terminal: ./mvnw spring-boot:run
 
-Technologie
+Technologie:
 
 Java 17
 
