@@ -1,4 +1,5 @@
 # CRUD Product App (Spring Boot)
+✅ Część A – gotowa do oceny (ver. 1.0)
 
 Prosty projekt **CRUD** dla encji `Product` (Java 17, Spring Boot 3.5.6, H2, JPA, Flyway + frontend HTML/JS).
 
@@ -35,4 +36,5 @@ CREATE TABLE IF NOT EXISTS product (
   category VARCHAR(120) NOT NULL,
   created_at DATE NOT NULL
 );
+
 
