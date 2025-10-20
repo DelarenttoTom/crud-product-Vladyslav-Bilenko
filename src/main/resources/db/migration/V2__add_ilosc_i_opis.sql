@@ -1,0 +1,18 @@
+ALTER TABLE product
+    ADD COLUMN IF NOT EXISTS ilosc INT;
+
+UPDATE product
+SET ilosc = 0
+WHERE ilosc IS NULL;
+
+ALTER TABLE product
+    ALTER COLUMN ilosc SET NOT NULL;
+
+ALTER TABLE product
+    ADD COLUMN IF NOT EXISTS opis VARCHAR(500);
+
+UPDATE product
+SET opis = COALESCE(opis, '');
+
+ALTER TABLE product
+    ALTER COLUMN opis SET NOT NULL;

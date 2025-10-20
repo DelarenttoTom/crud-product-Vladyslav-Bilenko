@@ -5,132 +5,66 @@
     <title>Produkty – CRUD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        /* Общий стиль */
-        body {
-            font-family: Arial, sans-serif;
-            background: #f0f8ff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 900px;
-            width: 100%;
-        }
-        h1 {
-            margin: 0 0 10px;
-            text-align: center;
-            color: #333;
-        }
-        small {
-            display: block;
-            text-align: center;
-            margin-bottom: 20px;
-            color: #555;
-        }
+        body { font-family: Arial, sans-serif; background: #f0f8ff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1100px; width: 100%; }
+        h1 { margin: 0 0 10px; text-align: center; color: #333; }
+        small { display: block; text-align: center; margin-bottom: 20px; color: #555; }
 
-        /* Форма */
-        form {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        label {
-            font-size: 12px;
-            color: #444;
-            margin-bottom: 4px;
-            display: block;
-        }
-        input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-        .row {
-            grid-column: 1 / -1;
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-        button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            background-color: #1e90ff;
-            color: white;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #0c71d3;
-        }
-        #clear {
-            background-color: #aaa;
-        }
-        #clear:hover {
-            background-color: #888;
-        }
-        #msg {
-            grid-column: 1 / -1;
-            color: #c00;
-            min-height: 1.2em;
-            text-align: center;
-        }
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        label { font-size: 12px; color: #444; margin-bottom: 4px; display: block; }
+        input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        textarea { min-height: 70px; resize: vertical; }
+        input:invalid, textarea:invalid { border-color:#e57373; }
+        .row { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; }
+        button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; background-color: #1e90ff; color: white; font-weight: bold; transition: background 0.3s; }
+        button:hover { background-color: #0c71d3; }
+        #clear { background-color: #aaa; } #clear:hover { background-color: #888; }
+        #msg { grid-column: 1 / -1; color: #c00; min-height: 1.2em; text-align: center; }
 
-        /* Таблица */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            text-align: left;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        th {
-            background: #e0f0ff;
-        }
-        .actions {
-            display: flex;
-            gap: 6px;
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #e0f0ff; }
+        .actions { display: flex; gap: 6px; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Produkty – CRUD</h1>
-    <small>Prosty frontend: dodaj, edytuj, usuń, lista</small>
+    <small>Pola: nazwa, cena, kategoria, data, <b>ilość</b>, <b>opis</b></small>
 
     <form id="form">
         <input type="hidden" id="id">
+
         <div>
-            <label>Nazwa</label>
-            <input id="name" required>
+            <label for="name">Nazwa</label>
+            <input id="name" required maxlength="255" placeholder="np. Klawiatura">
         </div>
+
         <div>
-            <label>Cena (PLN)</label>
-            <input id="price" placeholder="np. 19,99" required>
+            <label for="price">Cena (PLN)</label>
+            <input id="price" type="number" step="0.01" min="0" required placeholder="np. 19,99">
         </div>
+
         <div>
-            <label>Kategoria</label>
-            <input id="category" required>
+            <label for="category">Kategoria</label>
+            <input id="category" required maxlength="120" placeholder="np. Akcesoria">
         </div>
+
         <div>
-            <label>Data (YYYY-MM-DD)</label>
+            <label for="createdAt">Data (YYYY-MM-DD)</label>
             <input id="createdAt" type="date" required>
         </div>
+
+        <div>
+            <label for="ilosc">Ilość</label>
+            <input id="ilosc" type="number" min="0" step="1" required placeholder="np. 5">
+        </div>
+
+        <div>
+            <label for="opis">Opis</label>
+            <textarea id="opis" maxlength="500" required placeholder="Krótki opis produktu (max 500 znaków)"></textarea>
+        </div>
+
         <div class="row">
             <button type="submit">Zapisz</button>
             <button type="button" id="clear">Wyczyść</button>
@@ -141,11 +75,11 @@
     <table>
         <thead>
         <tr>
-            <th>ID</th><th>Nazwa</th><th>Cena</th><th>Kategoria</th><th>Data</th><th>Akcje</th>
+            <th>ID</th><th>Nazwa</th><th>Cena</th><th>Kategoria</th><th>Data</th><th>Ilość</th><th>Opis</th><th>Akcje</th>
         </tr>
         </thead>
         <tbody id="tbody">
-        <tr><td colspan="6" style="text-align:center;color:#777">Brak danych</td></tr>
+        <tr><td colspan="8" style="text-align:center;color:#777">Brak danych</td></tr>
         </tbody>
     </table>
 </div>
@@ -154,22 +88,30 @@
     const API = "/api/products";
     const $ = (id)=>document.getElementById(id);
     const tbody = $("tbody");
-
+    const plnFmt = new Intl.NumberFormat('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     function readForm(){
+        const rawPrice = String($("price").value).replace(",", ".");
         return {
             name: $("name").value.trim(),
-            price: Number(String($("price").value).replace(",", ".")),
+            price: Number(rawPrice),
             category: $("category").value.trim(),
-            createdAt: $("createdAt").value
+            createdAt: $("createdAt").value,
+            ilosc: Number($("ilosc").value),
+            opis: $("opis").value.trim()
         };
     }
+
     function fillForm(p={}) {
-        $("id").value = p.id || "";
-        $("name").value = p.name || "";
+        $("id").value = p.id  "";
+        $("name").value = p.name  "";
         $("price").value = (p.price ?? "").toString();
-        $("category").value = p.category || "";
-        $("createdAt").value = p.createdAt || new Date().toISOString().slice(0,10);
+        $("category").value = p.category  "";
+        $("createdAt").value = p.createdAt  new Date().toISOString().slice(0,10);
+        $("ilosc").value = (p.ilosc ?? "").toString();
+        $("opis").value = p.opis  "";
     }
+
     function showMsg(t="") { $("msg").textContent = t; }
 
     async function load() {
@@ -177,16 +119,18 @@
         if(!r.ok){ showMsg("Błąd połączenia z API"); return; }
         const data = await r.json();
         if(!data.length){
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#777">Brak danych</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#777">Brak danych</td></tr>`;
             return;
         }
         tbody.innerHTML = data.map(p=>`
       <tr>
         <td>${p.id}</td>
-        <td>${p.name}</td>
-        <td>${(Number(p.price)||0).toFixed(2)}</td>
-        <td>${p.category}</td>
-        <td>${p.createdAt}</td>
+        <td>${escapeHtml(p.name)}</td>
+        <td>${plnFmt.format(Number(p.price)||0)} zł</td>
+        <td>${escapeHtml(p.category)}</td>
+        <td>${escapeHtml(p.createdAt)}</td>
+        <td>${Number(p.ilosc)||0}</td>
+        <td>${escapeHtml(p.opis  '')}</td>
         <td class="actions">
           <button data-edit="${p.id}">Edytuj</button>
           <button data-del="${p.id}">Usuń</button>
@@ -197,14 +141,23 @@
 
     $("form").onsubmit = async (e)=>{
         e.preventDefault(); showMsg("");
-        const id = $("id").value;
+
         const payload = readForm();
+        if(!payload.name){ showMsg("Nazwa jest wymagana"); return; }
+        if(!(payload.price >= 0)){ showMsg("Cena musi być liczbą ≥ 0"); return; }
+        if(!payload.category){ showMsg("Kategoria jest wymagana"); return; }
+        if(!payload.createdAt){ showMsg("Data jest wymagana"); return; }
+        if(!(payload.ilosc >= 0)){ showMsg("Ilość musi być liczbą całkowitą ≥ 0"); return; }
+        if(!payload.opis){ showMsg("Opis jest wymagany"); return; }
+        if(payload.opis.length > 500){ showMsg("Opis: max 500 znaków"); return; }
+
+        const id = $("id").value;
         const r = await fetch(id ? `${API}/${id}` : API, {
             method: id ? "PUT" : "POST",
             headers: {"Content-Type":"application/json"},
             body: JSON.stringify(payload)
         });
-        if(!r.ok){ showMsg(await r.text() || "Błąd zapisu"); return; }
+        if(!r.ok){ showMsg((await r.text()) || "Błąd zapisu"); return; }
         fillForm();
         await load();
     };
@@ -219,7 +172,7 @@
             if(r.ok) fillForm(await r.json());
         }
         if(idD){
-            if(!confirm("Usunąć?")) return;
+            if(!confirm("Usunąć ten produkt?")) return;
             const r = await fetch(`${API}/${idD}`, {method:"DELETE"});
             if(!r.ok){ showMsg("Nie udało się usunąć"); return; }
             await load();

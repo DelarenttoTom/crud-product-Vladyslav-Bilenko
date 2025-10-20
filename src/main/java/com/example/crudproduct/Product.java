@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "product")
 public class Product {
 
     @Id
@@ -20,20 +21,28 @@ public class Product {
     @Column(nullable=false, length = 120)
     private String category;
 
-    @Column(nullable=false)
+    @Column(name = "created_at", nullable=false)
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdAt;
 
+    // nowe pola z Części B
+    @Column(name = "ilosc", nullable = false)
+    private Integer ilosc;
+
+    @Column(name = "opis", nullable = false, length = 500)
+    private String opis;
+
     public Product() {}
 
-    public Product(String name, double price, String category, LocalDate createdAt) {
+    public Product(String name, double price, String category, LocalDate createdAt, Integer ilosc, String opis) {
         this.name = name;
         this.price = price;
         this.category = category;
         this.createdAt = createdAt;
+        this.ilosc = ilosc;
+        this.opis = opis;
     }
 
-    // getters/setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -48,4 +57,10 @@ public class Product {
 
     public LocalDate getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDate createdAt) { this.createdAt = createdAt; }
+
+    public Integer getIlosc() { return ilosc; }
+    public void setIlosc(Integer ilosc) { this.ilosc = ilosc; }
+
+    public String getOpis() { return opis; }
+    public void setOpis(String opis) { this.opis = opis; }
 }
