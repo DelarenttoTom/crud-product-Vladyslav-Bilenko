@@ -2,19 +2,18 @@
 <html lang="pl">
 <head>
     <meta charset="utf-8">
-    <title>Produkty – CRUD</title>
+    <title>Produkty – CRUD + Logowanie</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        /* Общий стиль */
         body {
             font-family: Arial, sans-serif;
             background: #f0f8ff;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 30px;
         }
         .container {
             background: #fff;
@@ -35,8 +34,6 @@
             margin-bottom: 20px;
             color: #555;
         }
-
-        /* Форма */
         form {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -72,46 +69,52 @@
             font-weight: bold;
             transition: background 0.3s;
         }
-        button:hover {
-            background-color: #0c71d3;
-        }
-        #clear {
-            background-color: #aaa;
-        }
-        #clear:hover {
-            background-color: #888;
-        }
-        #msg {
-            grid-column: 1 / -1;
-            color: #c00;
-            min-height: 1.2em;
-            text-align: center;
-        }
+        button:hover { background-color: #0c71d3; }
+        #clear { background-color: #aaa; }
+        #clear:hover { background-color: #888; }
+        #msg, #authMsg { color: #c00; min-height: 1.2em; text-align: center; margin-top: 5px; }
 
-        /* Таблица */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
             text-align: left;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #e0f0ff; }
+        .actions { display: flex; gap: 6px; }
+
+        #auth {
+            text-align: center;
+            margin-bottom: 20px;
         }
-        th {
-            background: #e0f0ff;
+        #auth input {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
         }
-        .actions {
-            display: flex;
-            gap: 6px;
-        }
+        #auth button { padding: 6px 12px; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Produkty – CRUD</h1>
-    <small>Prosty frontend: dodaj, edytuj, usuń, lista</small>
+    <small>Logowanie, rejestracja i ochrona endpointów (JWT)</small>
+
+    <div id="auth">
+        <h3>Logowanie / Rejestracja</h3>
+        <div style="display:flex; gap:8px; justify-content:center; margin-bottom:8px;">
+            <input id="login" placeholder="Login">
+            <input id="password" type="password" placeholder="Hasło">
+        </div>
+        <div style="display:flex; gap:8px; justify-content:center;">
+            <button id="btnLogin" type="button">Zaloguj</button>
+            <button id="btnRegister" type="button">Zarejestruj</button>
+            <button id="btnLogout" type="button" style="display:none;background-color:#888;">Wyloguj</button>
+        </div>
+        <p id="authMsg"></p>
+        <hr>
+    </div>
 
     <form id="form">
         <input type="hidden" id="id">
@@ -152,8 +155,58 @@
 
 <script>
     const API = "/api/products";
+    const AUTH = "/api/auth";
     const $ = (id)=>document.getElementById(id);
     const tbody = $("tbody");
+
+    function getToken() { return localStorage.getItem("token"); }
+    function setToken(t) { t ? localStorage.setItem("token", t) : localStorage.removeItem("token"); }
+    function isLoggedIn() { return !!getToken(); }
+
+    function updateUI() {
+        const logged = isLoggedIn();
+        document.querySelector("form").style.display = logged ? "grid" : "none";
+        document.querySelector("table").style.display = logged ? "table" : "none";
+        $("btnLogout").style.display = logged ? "inline-block" : "none";
+        $("btnLogin").style.display = logged ? "none" : "inline-block";
+        $("btnRegister").style.display = logged ? "none" : "inline-block";
+        $("authMsg").textContent = logged ? "✅ Zalogowano pomyślnie" : "";
+    }
+
+    async function fetchAuth(url, options={}) {
+        const token = getToken();
+        options.headers = options.headers || {};
+        if (token) options.headers["Authorization"] = "Bearer " + token;
+        const r = await fetch(url, options);
+        if (r.status === 401) {
+            setToken(null);
+            updateUI();
+        }
+        return r;
+    }
+
+    async function load() {
+        const r = await fetchAuth(API);
+        if(!r.ok){ $("msg").textContent = "Błąd połączenia z API"; return; }
+        const data = await r.json();
+        if(!data.length){
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#777">Brak danych</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.map(p=>`
+          <tr>
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>${(Number(p.price)||0).toFixed(2)}</td>
+            <td>${p.category}</td>
+            <td>${p.createdAt}</td>
+            <td class="actions">
+              <button data-edit="${p.id}">Edytuj</button>
+              <button data-del="${p.id}">Usuń</button>
+            </td>
+          </tr>
+        `).join("");
+    }
 
     function readForm(){
         return {
@@ -170,64 +223,84 @@
         $("category").value = p.category || "";
         $("createdAt").value = p.createdAt || new Date().toISOString().slice(0,10);
     }
-    function showMsg(t="") { $("msg").textContent = t; }
-
-    async function load() {
-        const r = await fetch(API);
-        if(!r.ok){ showMsg("Błąd połączenia z API"); return; }
-        const data = await r.json();
-        if(!data.length){
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#777">Brak danych</td></tr>`;
-            return;
-        }
-        tbody.innerHTML = data.map(p=>`
-      <tr>
-        <td>${p.id}</td>
-        <td>${p.name}</td>
-        <td>${(Number(p.price)||0).toFixed(2)}</td>
-        <td>${p.category}</td>
-        <td>${p.createdAt}</td>
-        <td class="actions">
-          <button data-edit="${p.id}">Edytuj</button>
-          <button data-del="${p.id}">Usuń</button>
-        </td>
-      </tr>
-    `).join("");
-    }
 
     $("form").onsubmit = async (e)=>{
-        e.preventDefault(); showMsg("");
+        e.preventDefault();
+        $("msg").textContent = "";
         const id = $("id").value;
         const payload = readForm();
-        const r = await fetch(id ? `${API}/${id}` : API, {
+        const r = await fetchAuth(id ? `${API}/${id}` : API, {
             method: id ? "PUT" : "POST",
             headers: {"Content-Type":"application/json"},
             body: JSON.stringify(payload)
         });
-        if(!r.ok){ showMsg(await r.text() || "Błąd zapisu"); return; }
+        if(!r.ok){ $("msg").textContent = await r.text() || "Błąd zapisu"; return; }
         fillForm();
         await load();
     };
 
-    $("clear").onclick = ()=>{ fillForm(); showMsg(""); };
+    $("clear").onclick = ()=>{ fillForm(); $("msg").textContent = ""; };
 
     tbody.addEventListener("click", async (e)=>{
         const idE = e.target.getAttribute("data-edit");
         const idD = e.target.getAttribute("data-del");
         if(idE){
-            const r = await fetch(`${API}/${idE}`);
+            const r = await fetchAuth(`${API}/${idE}`);
             if(r.ok) fillForm(await r.json());
         }
         if(idD){
             if(!confirm("Usunąć?")) return;
-            const r = await fetch(`${API}/${idD}`, {method:"DELETE"});
-            if(!r.ok){ showMsg("Nie udało się usunąć"); return; }
+            const r = await fetchAuth(`${API}/${idD}`, {method:"DELETE"});
+            if(!r.ok){ $("msg").textContent = "Nie udało się usunąć"; return; }
             await load();
         }
     });
 
+    $("btnLogin").onclick = async ()=>{
+        const login = $("login").value.trim();
+        const password = $("password").value.trim();
+        if(!login || !password) return $("authMsg").textContent = "Podaj login i hasło";
+
+        const r = await fetch(`${AUTH}/login`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({login,password})
+        });
+
+        const text = await r.text();
+        try {
+            const data = JSON.parse(text);
+            if(r.ok && data.token){
+                setToken(data.token);
+                updateUI();
+                await load();
+            } else {
+                $("authMsg").textContent = data.message || text || "Błędny login lub hasło";
+            }
+        } catch {
+            $("authMsg").textContent = text || "Błąd logowania";
+        }
+    };
+
+    $("btnRegister").onclick = async ()=>{
+        const login = $("login").value.trim();
+        const password = $("password").value.trim();
+        const r = await fetch(`${AUTH}/register`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({login,password})
+        });
+        $("authMsg").textContent = await r.text();
+    };
+
+    $("btnLogout").onclick = ()=>{
+        setToken(null);
+        updateUI();
+    };
+
     fillForm();
-    load();
+    updateUI();
+    if (isLoggedIn()) load();
 </script>
 </body>
 </html>
